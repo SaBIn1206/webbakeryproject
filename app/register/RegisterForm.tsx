@@ -1,75 +1,126 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { RegisterFormData, registerSchema } from "@/lib/schemas/auth.schema";
+import { handleRegisterUser } from "@/lib/actions/auth-action";
+
+const inputClassName =
+  "mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100";
 
 export default function RegisterForm() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState("");
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+  });
+
+  const onSubmit = (data: RegisterFormData) => {
+    setError("");
+    startTransition(async () => {
+      try {
+        const result = await handleRegisterUser(data);
+        if (result.success) {
+          router.push("/login");
+        } else {
+          setError(result.message || "Registration failed");
+        }
+      } catch (err: unknown) {
+        const error = err as { message?: string };
+        setError(error?.message || "Registration failed");
+      }
+    });
+  };
 
   return (
     <>
-      <form className="mt-10 space-y-6" onSubmit={(event) => event.preventDefault()}>
+      <form className="mt-10 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+        {error && (
+          <p className="rounded-2xl bg-red-50 px-4 py-3 text-sm text-red-700 ring-1 ring-red-100">
+            {error}
+          </p>
+        )}
+
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Full Name</span>
           <input
             type="text"
-            value={name}
-            onChange={(event) => setName(event.target.value)}
             placeholder="Your full name"
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
-            required
+            className={inputClassName}
+            {...register("name")}
           />
+          {errors.name && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.name.message}
+            </span>
+          )}
         </label>
 
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Email</span>
           <input
             type="email"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
             placeholder="example@gmail.com"
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
-            required
+            className={inputClassName}
+            {...register("email")}
           />
+          {errors.email && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.email.message}
+            </span>
+          )}
         </label>
 
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Password</span>
           <input
             type="password"
-            value={password}
-            onChange={(event) => setPassword(event.target.value)}
             placeholder="Create a password"
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
-            required
+            className={inputClassName}
+            {...register("password")}
           />
+          {errors.password && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.password.message}
+            </span>
+          )}
         </label>
 
         <label className="block">
           <span className="text-sm font-medium text-slate-700">Confirm Password</span>
           <input
             type="password"
-            value={confirmPassword}
-            onChange={(event) => setConfirmPassword(event.target.value)}
             placeholder="Repeat your password"
-            className="mt-3 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-slate-900 outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-100"
-            required
+            className={inputClassName}
+            {...register("confirmPassword")}
           />
+          {errors.confirmPassword && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.confirmPassword.message}
+            </span>
+          )}
         </label>
 
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-red-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+          disabled={isPending}
+          className="inline-flex w-full items-center justify-center rounded-2xl bg-red-600 px-6 py-3 text-base font-semibold text-white transition hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-70"
         >
-          Register
+          {isPending ? "Creating account..." : "Register"}
         </button>
       </form>
 
       <p className="mt-8 text-center text-sm text-slate-600">
-        Already have an account?{' '}
+        Already have an account?{" "}
         <Link href="/login" className="font-semibold text-red-600 hover:text-red-700">
           Login
         </Link>

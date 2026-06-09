@@ -12,7 +12,14 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Ignore backend directory (separate project)
+    "api/**",
   ]),
+  {
+    rules: {
+      "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
+    },
+  },
 ]);
 
 export default eslintConfig;
