@@ -18,6 +18,19 @@ export const LoginUserDTO = UserSchema.pick({
 
 export type LoginUserDTO = z.infer<typeof LoginUserDTO>;
 
+const UpdatePasswordSchema = z.object({
+  currentPassword: z.string().min(6, "Minimum 6 characters"),
+  newPassword: z.string().min(6, "Minimum 6 characters"),
+  confirmPassword: z.string().min(6, "Minimum 6 characters"),
+}).refine((data) => data.newPassword === data.confirmPassword, {
+  message: "Passwords do not match",
+  path: ["confirmPassword"],
+});
+
+export const UpdatePasswordDTO = UpdatePasswordSchema;
+
+export type UpdatePasswordDTO = z.infer<typeof UpdatePasswordDTO>;
+
 export const UpdateUserDTO = UserSchema.partial().pick({
   firstName: true,
   lastName: true,

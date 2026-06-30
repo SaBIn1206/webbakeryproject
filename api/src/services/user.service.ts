@@ -1,6 +1,6 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
+import { CreateUserDTO, LoginUserDTO, UpdateUserDTO, UpdatePasswordDTO } from "../dtos/user.dto";
 import { HttpException } from "../exceptions/http-exception";
 import { IUser } from "../models/user.model";
 import { UserMongoRepository } from "../repositories/user.repository";
@@ -87,5 +87,23 @@ export class UserService {
     }
 
     return updatedUser;
+  }
+
+  async updatePassword(id: string, passwordData: UpdatePasswordDTO): Promise<void> {
+    const user = await userRepository.getUserById(id);
+    if (!user) {
+      throw new HttpException(404, "User not found");
+    }
+
+    const isCurrentPasswordValid = await bcryptjs.compare(
+      passwordData.currentPassword,
+      user.password
+    );
+    if (!isCurrentPasswordValid) {
+      throw new HttpException(400, "Current password is incorrect");
+    }
+
+    const hashedPassword = await bcryptjs.hash(passwordData.newPassword, 10);
+    await userRepository.update(id, { password: hashedPassword });
   }
 }

@@ -18,4 +18,10 @@ userRouter.put(
   userController.updateUser
 );
 
+userRouter.put(
+  "/update-password",
+  authorizedMiddleware,
+  userController.updatePassword
+);
+
 export default userRouter;

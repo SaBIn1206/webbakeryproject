@@ -4,6 +4,7 @@ import {
   CreateUserDTO,
   LoginUserDTO,
   UpdateUserDTO,
+  UpdatePasswordDTO,
 } from "../dtos/user.dto";
 import { UserService } from "../services/user.service";
 import { ApiResponseHelper } from "../utils/apihelper.util";
@@ -118,6 +119,34 @@ export class UserController {
         safeUser,
         "User updated successfully"
       );
+    } catch (error: unknown) {
+      const err = error as { message?: string; status?: number };
+      return ApiResponseHelper.error(
+        res,
+        err.message || "Internal Server Error",
+        err.status || 500
+      );
+    }
+  }
+
+  async updatePassword(req: Request, res: Response) {
+    try {
+      const userId = req.user?._id;
+      if (!userId) {
+        return ApiResponseHelper.error(res, "Unauthorized", 401);
+      }
+
+      const passwordData = UpdatePasswordDTO.safeParse(req.body);
+      if (!passwordData.success) {
+        return ApiResponseHelper.error(
+          res,
+          z.prettifyError(passwordData.error),
+          400
+        );
+      }
+
+      await userService.updatePassword(userId, passwordData.data);
+      return ApiResponseHelper.success(res, null, "Password updated successfully");
     } catch (error: unknown) {
       const err = error as { message?: string; status?: number };
       return ApiResponseHelper.error(
