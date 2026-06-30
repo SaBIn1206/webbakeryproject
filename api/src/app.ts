@@ -1,6 +1,7 @@
 import cors from "cors";
 import express, { Application, NextFunction, Request, Response } from "express";
 import morgan from "morgan";
+import path from "path";
 import { HttpException } from "./exceptions/http-exception";
 import userRoutes from "./routes/user.route";
 import { ApiResponseHelper } from "./utils/apihelper.util";
@@ -16,6 +17,8 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("combined"));
+
+app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
 
 app.use("/api/v1/auth", userRoutes);
 

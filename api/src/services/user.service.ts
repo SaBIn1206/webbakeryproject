@@ -1,6 +1,6 @@
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
+import { CreateUserDTO, LoginUserDTO, UpdateUserDTO } from "../dtos/user.dto";
 import { HttpException } from "../exceptions/http-exception";
 import { IUser } from "../models/user.model";
 import { UserMongoRepository } from "../repositories/user.repository";
@@ -13,6 +13,13 @@ export class UserService {
     const existingEmail = await userRepository.getUserByEmail(userData.email);
     if (existingEmail) {
       throw new HttpException(400, "Email already exists");
+    }
+
+    const existingUsername = await userRepository.getUserByUsername(
+      userData.username
+    );
+    if (existingUsername) {
+      throw new HttpException(400, "Username already exists");
     }
 
     const hashedPassword = await bcryptjs.hash(userData.password, 10);
@@ -45,5 +52,40 @@ export class UserService {
     );
 
     return { user, token };
+  }
+
+  async updateUser(id: string, userData: UpdateUserDTO): Promise<IUser | null> {
+    const existingUser = await userRepository.getUserById(id);
+    if (!existingUser) {
+      throw new HttpException(404, "User not found");
+    }
+
+    if (userData.email && userData.email !== existingUser.email) {
+      const existingEmail = await userRepository.getUserByEmail(userData.email);
+      if (existingEmail) {
+        throw new HttpException(400, "Email already exists");
+      }
+    }
+
+    if (userData.username && userData.username !== existingUser.username) {
+      const existingUsername = await userRepository.getUserByUsername(
+        userData.username
+      );
+      if (existingUsername) {
+        throw new HttpException(400, "Username already exists");
+      }
+    }
+
+    if (userData.password) {
+      const hashedPassword = await bcryptjs.hash(userData.password, 10);
+      userData.password = hashedPassword;
+    }
+
+    const updatedUser = await userRepository.update(id, userData);
+    if (!updatedUser) {
+      throw new HttpException(500, "Failed to update user");
+    }
+
+    return updatedUser;
   }
 }

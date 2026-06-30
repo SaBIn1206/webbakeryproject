@@ -1,6 +1,10 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { CreateUserDTO, LoginUserDTO } from "../dtos/user.dto";
+import {
+  CreateUserDTO,
+  LoginUserDTO,
+  UpdateUserDTO,
+} from "../dtos/user.dto";
 import { UserService } from "../services/user.service";
 import { ApiResponseHelper } from "../utils/apihelper.util";
 
@@ -60,4 +64,68 @@ export class UserController {
       );
     }
   }
+
+  async whoami(req: Request, res: Response) {
+    try {
+      const user = req.user;
+      if (!user) {
+        return ApiResponseHelper.error(res, "User not found", 404);
+      }
+      const { password: _, ...safeUser } = user.toObject();
+      return ApiResponseHelper.success(
+        res,
+        safeUser,
+        "User details fetched successfully"
+      );
+    } catch (error: unknown) {
+      const err = error as { message?: string; status?: number };
+      return ApiResponseHelper.error(
+        res,
+        err.message || "Internal Server Error",
+        err.status || 500
+      );
+    }
+  }
+
+  async updateUser(req: Request, res: Response) {
+    try {
+      const userId = req.user?._id;
+      if (!userId) {
+        return ApiResponseHelper.error(res, "Unauthorized", 401);
+      }
+
+      const userData = UpdateUserDTO.safeParse(req.body);
+      if (!userData.success) {
+        return ApiResponseHelper.error(
+          res,
+          z.prettifyError(userData.error),
+          400
+        );
+      }
+
+      if (req.file) {
+        userData.data.profileImage = "/uploads/" + req.file.filename;
+      }
+
+      const updatedUser = await userService.updateUser(userId, userData.data);
+      if (!updatedUser) {
+        return ApiResponseHelper.error(res, "Failed to update user", 500);
+      }
+
+      const { password: _, ...safeUser } = updatedUser.toObject();
+      return ApiResponseHelper.success(
+        res,
+        safeUser,
+        "User updated successfully"
+      );
+    } catch (error: unknown) {
+      const err = error as { message?: string; status?: number };
+      return ApiResponseHelper.error(
+        res,
+        err.message || "Internal Server Error",
+        err.status || 500
+      );
+    }
+  }
 }
+

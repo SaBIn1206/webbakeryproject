@@ -51,16 +51,46 @@ export default function RegisterForm() {
         )}
 
         <label className="block">
-          <span className="text-sm font-medium text-slate-700">Full Name</span>
+          <span className="text-sm font-medium text-slate-700">First Name</span>
           <input
             type="text"
-            placeholder="Your full name"
+            placeholder="John"
             className={inputClassName}
-            {...register("name")}
+            {...register("firstName")}
           />
-          {errors.name && (
+          {errors.firstName && (
             <span className="mt-2 block text-sm text-red-600">
-              {errors.name.message}
+              {errors.firstName.message}
+            </span>
+          )}
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">Last Name</span>
+          <input
+            type="text"
+            placeholder="Doe"
+            className={inputClassName}
+            {...register("lastName")}
+          />
+          {errors.lastName && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.lastName.message}
+            </span>
+          )}
+        </label>
+
+        <label className="block">
+          <span className="text-sm font-medium text-slate-700">Username</span>
+          <input
+            type="text"
+            placeholder="johndoe"
+            className={inputClassName}
+            {...register("username")}
+          />
+          {errors.username && (
+            <span className="mt-2 block text-sm text-red-600">
+              {errors.username.message}
             </span>
           )}
         </label>

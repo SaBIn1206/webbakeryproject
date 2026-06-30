@@ -7,12 +7,15 @@ export interface IUser extends UserType, Document {
   updatedAt: Date;
 }
 
-const UserMongoSchema: Schema = new Schema(
+const UserMongoSchema: Schema = new Schema<IUser>(
   {
-    name: { type: String, required: true },
+    firstName: { type: String, required: true },
+    lastName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
+    username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ["admin", "user"], default: "user" },
+    profileImage: { type: String, required: false },
   },
   {
     timestamps: true,
