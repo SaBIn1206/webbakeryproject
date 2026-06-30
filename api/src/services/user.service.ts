@@ -1,4 +1,4 @@
-import bcryptjs from "bcryptjs";
+import * as bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { CreateUserDTO, LoginUserDTO, UpdateUserDTO, UpdatePasswordDTO } from "../dtos/user.dto";
 import { HttpException } from "../exceptions/http-exception";

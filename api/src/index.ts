@@ -7,3 +7,5 @@ connectToMongoDB();
 app.listen(PORT, () => {
   console.log(`Server: http://localhost:${PORT}`);
 });
+
+export default app;
